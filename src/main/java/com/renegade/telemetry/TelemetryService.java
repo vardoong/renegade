@@ -49,8 +49,8 @@ public class TelemetryService {
 
     @Transactional(readOnly = true)
     public Page<TelemetryResponse> getList(
-            Pageable pageable,
-            Long vehicleId) {
+            Long vehicleId,
+            Pageable pageable) {
         Vehicle vehicle = vehicleRepository.findById(vehicleId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
 

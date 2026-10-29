@@ -38,14 +38,14 @@ public class TelemetryController {
 
     @GetMapping("/api/v1/vehicles/{vehicleId}/telemetry")
     public ResponseEntity<Page<TelemetryResponse>> findList(
+            @PathVariable("vehicleId") Long vehicleId,
             @PageableDefault(
                     size = 20,
                     sort = "id",
                     direction = Sort.Direction.DESC
-            ) Pageable pageable,
-            @PathVariable("vehicleId") Long vehicleId
+            ) Pageable pageable
     ) {
-        return ResponseEntity.ok(telemetryService.getList(pageable, vehicleId));
+        return ResponseEntity.ok(telemetryService.getList(vehicleId, pageable));
     }
 
     @GetMapping("/api/v1/vehicles/{vehicleId}/telemetry/latest")
