@@ -14,12 +14,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/vehicles")
 public class VehicleController {
 
     private final VehicleService vehicleService;
 
-    @PostMapping
+    @PostMapping("/api/v1/vehicles")
     public ResponseEntity<VehicleResponse> create(
             @Valid @RequestBody VehicleCreateRequest vehicleCreateRequest
     ) {
@@ -30,14 +29,14 @@ public class VehicleController {
                 .body(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/api/v1/vehicles/{id}")
     public ResponseEntity<VehicleResponse> findById(
             @PathVariable("id") Long id
     ) {
         return ResponseEntity.ok(vehicleService.get(id));
     }
 
-    @GetMapping
+    @GetMapping("/api/v1/vehicles")
     public ResponseEntity<Page<VehicleResponse>> getList(
             @PageableDefault(
                     size = 20,

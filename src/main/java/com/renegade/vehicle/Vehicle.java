@@ -35,7 +35,11 @@ public class Vehicle {
     private LocalDateTime createdAt;
 
     @Builder
-    private Vehicle(String externalId, String modelName, String name) {
+    private Vehicle(
+            String externalId,
+            String modelName,
+            String name
+    ) {
         this.externalId = externalId;
         this.modelName = modelName;
         this.name = name;
