@@ -51,19 +51,21 @@ public class TelemetryService {
     public Page<TelemetryResponse> getList(
             Long vehicleId,
             Pageable pageable) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
+        if (!vehicleRepository.existsById(vehicleId)) {
+            throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
+        }
 
-        return telemetryRepository.findByVehicle_Id(vehicle.getId(), pageable)
+        return telemetryRepository.findByVehicle_Id(vehicleId, pageable)
                 .map(TelemetryResponse::from);
     }
 
     @Transactional(readOnly = true)
     public TelemetryResponse getLatest(Long vehicleId) {
-        Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
+        if (!vehicleRepository.existsById(vehicleId)) {
+            throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
+        }
 
-        Telemetry telemetry = telemetryRepository.findTopByVehicle_IdOrderByTimestampDescIdDesc(vehicle.getId())
+        Telemetry telemetry = telemetryRepository.findTopByVehicle_IdOrderByTimestampDescIdDesc(vehicleId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.TELEMETRY_NOT_FOUND));
 
         return TelemetryResponse.from(telemetry);
