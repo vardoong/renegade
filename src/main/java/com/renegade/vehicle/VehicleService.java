@@ -1,5 +1,7 @@
 package com.renegade.vehicle;
 
+import com.renegade.global.exception.BusinessException;
+import com.renegade.global.exception.ErrorCode;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +20,7 @@ public class VehicleService {
     public VehicleResponse create(VehicleCreateRequest req) {
 
         if(vehicleRepository.existsByExternalId(req.externalId())) {
-            throw new IllegalArgumentException("이미 등록된 차량입니다.");
+            throw new BusinessException(ErrorCode.VEHICLE_ALREADY_EXISTS);
         }
 
         Vehicle vehicle = Vehicle.builder()
@@ -35,7 +37,7 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public VehicleResponse get(Long id){
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 차량입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
 
         return VehicleResponse.from(vehicle);
     }
