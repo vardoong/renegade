@@ -1,6 +1,10 @@
 package com.renegade.vehicle;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -9,6 +13,8 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "vehicle")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Vehicle {
 
     @Id
@@ -27,4 +33,11 @@ public class Vehicle {
     @Column(nullable = false)
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @Builder
+    private Vehicle(String externalId, String modelName, String name) {
+        this.externalId = externalId;
+        this.modelName = modelName;
+        this.name = name;
+    }
 }
