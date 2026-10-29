@@ -25,7 +25,7 @@ GET http://localhost:8080/api/v1/vehicles/1
 GET http://localhost:8080/api/v1/vehicles
 
 ### 차량 목록 조회 -- paging
-GET http://localhost:8080/api/v1/vehicles?page=0&size=10,sort=id,desc
+GET http://localhost:8080/api/v1/vehicles?page=0&size=10&sort=id,desc
 
 ### 존재하지 않는 차량 조회
 GET http://localhost:8080/api/v1/vehicles/9999999
