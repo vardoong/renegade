@@ -3,6 +3,8 @@ package com.renegade.vehicle;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,5 +30,19 @@ public class VehicleService {
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
         return VehicleResponse.from(savedVehicle);
+    }
+
+    @Transactional(readOnly = true)
+    public VehicleResponse get(Long id){
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 차량입니다."));
+
+        return VehicleResponse.from(vehicle);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<VehicleResponse> getList(Pageable pageable) {
+        return vehicleRepository.findAll(pageable)
+                .map(VehicleResponse::from);
     }
 }
