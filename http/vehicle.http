@@ -1,0 +1,19 @@
+### 차량 등록
+POST http://localhost:8080/api/v1/vehicles
+Content-Type: application/json
+
+{
+    "externalId": "VEHICLE-001",
+    "modelName": "IONIQ 5",
+    "name": "Test Vehicle"
+}
+
+### 중복 차량 등록 테스트
+POST http://localhost:8080/api/v1/vehicles
+Content-Type: application/json
+
+{
+  "externalId": "VEHICLE-001",
+  "modelName": "IONIQ 5",
+  "name": "Test Vehicle (duplicate)"
+}
