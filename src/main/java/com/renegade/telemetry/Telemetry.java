@@ -2,6 +2,10 @@ package com.renegade.telemetry;
 
 import com.renegade.vehicle.Vehicle;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -10,6 +14,8 @@ import java.time.LocalDateTime;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "telemetry")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Telemetry {
 
     @Id
@@ -44,4 +50,25 @@ public class Telemetry {
     @Column(nullable = false)
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @Builder
+    private Telemetry(
+            Vehicle vehicle,
+            Double speed,
+            Integer rpm,
+            Integer batteryLevel,
+            Double temperature,
+            Double latitude,
+            Double longitude,
+            LocalDateTime timestamp
+    ) {
+        this.vehicle = vehicle;
+        this.speed = speed;
+        this.rpm = rpm;
+        this.batteryLevel = batteryLevel;
+        this.temperature = temperature;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.timestamp = timestamp;
+    }
 }

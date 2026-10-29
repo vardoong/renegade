@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface TelemetryRepository extends JpaRepository<Telemetry, Long> {
     Page<Telemetry> findByVehicle_Id(Long vehicleId, Pageable pageable);
-    Optional<Telemetry> findTopByVehicle_IdOrderByTimestampDesc(Long vehicleId);
+    Optional<Telemetry> findTopByVehicle_IdOrderByTimestampDescIdDesc(Long vehicleId);
 }

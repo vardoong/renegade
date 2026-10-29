@@ -13,7 +13,11 @@ public enum ErrorCode {
 
     // Vehicle
     VEHICLE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 차량입니다."),
-    VEHICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 차량입니다.");
+    VEHICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 차량입니다."),
+
+    // Telemetry
+    TELEMETRY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 텔레메트리 데이터입니다."),
+    ;
 
     private final HttpStatus status;
     private final String message;
