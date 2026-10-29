@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record TelemetryCreateRequest(
         @NotNull
-        long vehicleId,
+        Long vehicleId,
 
         @NotNull
         Double speed,
