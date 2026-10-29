@@ -41,7 +41,7 @@ public class TelemetryController {
             @PathVariable("vehicleId") Long vehicleId,
             @PageableDefault(
                     size = 20,
-                    sort = "id",
+                    sort = {"timestamp", "id"},
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ) {
