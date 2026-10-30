@@ -25,6 +25,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
     runtimeOnly 'org.postgresql:postgresql'
 
     annotationProcessor 'org.projectlombok:lombok'
@@ -41,6 +42,17 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-testcontainers'
     testImplementation 'org.testcontainers:testcontainers-junit-jupiter'
     testImplementation 'org.testcontainers:testcontainers-postgresql'
+}
+
+dependencyManagement {
+    imports {
+        // CVE-2026-110879 대응:
+        // implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
+        // springdoc의 전이 의존성으로 포함된 Jackson 3.x/2.x 버전을 보안 수정 버전으로 변경
+        // 상위 라이브러리의 의존성 관리가 갱신되면 이건 지워도 될 수 있음 (별도 검토는 필요함)
+        mavenBom 'tools.jackson:jackson-bom:3.2.4'
+        mavenBom 'com.fasterxml.jackson:jackson-bom:2.22.4'
+    }
 }
 
 tasks.named('test') {
