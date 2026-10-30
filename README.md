@@ -28,6 +28,57 @@ Vehicle Simulator → Renegade Backend → PostgreSQL
 - Swagger / OpenAPI
 - Python (Vehicle Simulator)
 
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Java 21
+- Docker / Docker Compose
+
+### Environment Variables
+
+프로젝트 루트에 있는 `.env.example` 파일을 복사해서 `.env` 파일 생성
+
+```shell
+cp .env.example .env
+```
+
+생성된 `.env` 파일의 값을 로컬 환경에 맞게 수정
+
+| Variable | Description |
+|---|---|
+| POSTGRES_DB | PostgreSQL 데이터베이스 이름 |
+| POSTGRES_USER | PostgreSQL 사용자 이름 |
+| POSTGRES_PASSWORD | PostgreSQL 비밀번호 |
+
+- `.env.example` 환경변수 설정 예시 파일 (git 포함)
+- `.env` 실제 환경변수 설정 파일 (git 제외)
+
+### Run
+
+1. PostgreSQL 실행
+```shell
+docker compose up -d
+```
+2. 환경변수 적용
+```shell
+set -a
+source .env
+set +a
+```
+3. 테스트 실행
+```shell
+./gradlew test
+```
+4. 애플리케이션 실행
+```shell
+./gradlew bootRun
+```
+
+---
+
 ## Phase 1
 
 - Vehicle registration

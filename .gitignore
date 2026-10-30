@@ -50,6 +50,7 @@ Thumbs.db
 # Spring Boot / local configuration
 .env
 .env.*
+!.env.example
 application-local.yml
 application-dev.yml
 application-prod.yml
