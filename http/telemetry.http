@@ -81,18 +81,3 @@ Content-Type: application/json
   "longitude": 126.978,
   "timestamp": "2026-10-30T11:30:17"
 }
-
-### test
-POST http://localhost:8080/api/v1/telemetry
-Content-Type: application/json
-
-{
-  "vehicleId": 1,
-  "speed": "invalid",
-  "rpm": "invalid",
-  "batteryLevel": 78,
-  "temperature": 32.5,
-  "latitude": 37.5665,
-  "longitude": 126.978,
-  "timestamp": "2026-10-30T11:30:17"
-}
