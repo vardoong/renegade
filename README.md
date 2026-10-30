@@ -47,12 +47,6 @@ cp .env.example .env
 
 생성된 `.env` 파일의 값을 로컬 환경에 맞게 수정
 
-| Variable | Description |
-|---|---|
-| POSTGRES_DB | PostgreSQL 데이터베이스 이름 |
-| POSTGRES_USER | PostgreSQL 사용자 이름 |
-| POSTGRES_PASSWORD | PostgreSQL 비밀번호 |
-
 - `.env.example` 환경변수 설정 예시 파일 (git 포함)
 - `.env` 실제 환경변수 설정 파일 (git 제외)
 
@@ -76,6 +70,26 @@ set +a
 ```shell
 ./gradlew bootRun
 ```
+
+### API Documentation
+
+애플리케이션 실행 후 Swagger UI에서 API 명세를 확인하고 직접 요청을 테스트할 수 있습니다.
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+### Tests
+
+PostgreSQL 실행 및 환경변수 적용 후 다음 명령으로 전체 테스트를 실행합니다.
+
+```shell
+./gradlew clean test
+```
+
+- JUnit 5 기반 단위 테스트
+- Controller API 테스트
+- Testcontainers 기반 Repository 통합 테스트
+- 입력값 유효성 및 예외 처리 테스트
 
 ---
 
