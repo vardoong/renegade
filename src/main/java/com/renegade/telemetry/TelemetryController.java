@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-public class TelemetryController {
+public class TelemetryController implements TelemetryApi {
 
     private final TelemetryService telemetryService;
 

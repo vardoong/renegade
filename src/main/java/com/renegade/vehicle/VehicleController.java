@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-public class VehicleController {
+public class VehicleController implements VehicleApi {
 
     private final VehicleService vehicleService;
 
