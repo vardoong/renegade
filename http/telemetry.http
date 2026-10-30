@@ -10,7 +10,7 @@ Content-Type: application/json
   "temperature": 32.5,
   "latitude": 37.5665,
   "longitude": 126.978,
-  "timestamp": "2026-10-29T21:26:59"
+  "timestamp": "2026-10-30T11:25:38"
 }
 
 ### 없는 차량의 telemetry 생성
@@ -51,3 +51,48 @@ GET http://localhost:8080/api/v1/vehicles/2/telemetry/latest
 
 ### 없는 차량의 최근 telemetry 조회
 GET http://localhost:8080/api/v1/vehicles/9999999/telemetry/latest
+
+### 음수 속도
+POST http://localhost:8080/api/v1/telemetry
+Content-Type: application/json
+
+{
+  "vehicleId": 1,
+  "speed": -10,
+  "rpm": 2100,
+  "batteryLevel": 78,
+  "temperature": 32.5,
+  "latitude": 37.5665,
+  "longitude": 126.978,
+  "timestamp": "2026-10-30T11:30:17"
+}
+
+### null 속도
+POST http://localhost:8080/api/v1/telemetry
+Content-Type: application/json
+
+{
+  "vehicleId": 1,
+  "speed": null,
+  "rpm": 2100,
+  "batteryLevel": 78,
+  "temperature": 32.5,
+  "latitude": 37.5665,
+  "longitude": 126.978,
+  "timestamp": "2026-10-30T11:30:17"
+}
+
+### test
+POST http://localhost:8080/api/v1/telemetry
+Content-Type: application/json
+
+{
+  "vehicleId": 1,
+  "speed": "invalid",
+  "rpm": "invalid",
+  "batteryLevel": 78,
+  "temperature": 32.5,
+  "latitude": 37.5665,
+  "longitude": 126.978,
+  "timestamp": "2026-10-30T11:30:17"
+}
