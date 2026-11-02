@@ -4,6 +4,7 @@ import com.renegade.global.exception.BusinessException;
 import com.renegade.global.exception.ErrorCode;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -40,7 +41,8 @@ class VehicleControllerTest {
     private VehicleService vehicleService;
 
     @Test
-    void 차량_단건_조회_성공() throws Exception {
+    @DisplayName("차량 단건 조회 성공")
+    void getVehicleSuccessfully() throws Exception {
         // given
         VehicleResponse response = new VehicleResponse(
                 1L,
@@ -63,7 +65,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void 차량_목록_조회_성공() throws Exception {
+    @DisplayName("차량 목록 조회 성공")
+    void getVehicleListSuccessfully() throws Exception {
         // given
         Pageable pageable = PageRequest.of(
                 0,
@@ -95,7 +98,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void 차량_등록_성공() throws Exception {
+    @DisplayName("차량 등록 성공")
+    void createVehicleSuccessfully() throws Exception {
         // given
         VehicleCreateRequest request = new VehicleCreateRequest(
                 "VEHICLE-001",
@@ -128,7 +132,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void 차량_등록_필수값_누락_실패() throws Exception {
+    @DisplayName("차량 등록 시 필수값 누락으로 실패")
+    void createVehicleFailsWhenRequiredFieldIsMissing() throws Exception {
         // given
         String invalidRequest = """
             {
@@ -149,7 +154,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void 존재하지_않는_차량_조회시_404_반환() throws Exception {
+    @DisplayName("존재하지 않는 차량 조회 시 404 반환")
+    void getVehicleReturns404WhenNotFound() throws Exception {
         // given
         Long vehicleId = 999L;
 
@@ -164,7 +170,8 @@ class VehicleControllerTest {
     }
 
     @Test
-    void 중복_차량_등록시_409_반환() throws Exception {
+    @DisplayName("중복 차량 등록 시 409 반환")
+    void createVehicleReturns409WhenAlreadyExists() throws Exception {
         // given
         VehicleCreateRequest request = new VehicleCreateRequest(
                 "VEHICLE-001",

@@ -5,6 +5,7 @@ import com.renegade.global.exception.ErrorCode;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,7 +45,8 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 차량_등록_성공() {
+    @DisplayName("차량 등록 성공")
+    void createVehicleSuccessfully() {
         // given
         VehicleCreateRequest request = new VehicleCreateRequest(
                 "VEHICLE-001",
@@ -69,7 +71,8 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 차량_중복_등록_실패() {
+    @DisplayName("차량 중복 등록 실패")
+    void createVehicleFailsWhenAlreadyExists() {
         // given
         VehicleCreateRequest request = new VehicleCreateRequest(
                 "VEHICLE-001",
@@ -93,7 +96,8 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 차량_단건_조회_성공() {
+    @DisplayName("차량 단건 조회 성공")
+    void getVehicleSuccessfully() {
         // given
         when(vehicleRepository.findById(1L))
                 .thenReturn(Optional.of(vehicle));
@@ -107,7 +111,8 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 존재하지_않는_차량_조회_실패() {
+    @DisplayName("존재하지 않는 차량 조회 실패")
+    void getVehicleFailsWhenNotFound() {
         // given
         when(vehicleRepository.findById(999L))
                 .thenReturn(Optional.empty());
@@ -123,7 +128,8 @@ class VehicleServiceTest {
     }
 
     @Test
-    void 차량_목록_조회_성공() {
+    @DisplayName("차량 목록 조회 성공")
+    void getVehicleListSuccessfully() {
         // given
         Pageable pageable = PageRequest.of(0, 20);
 
@@ -141,7 +147,7 @@ class VehicleServiceTest {
         assertThat(response.getTotalElements()).isEqualTo(1);
         assertThat(response.getContent()).hasSize(1);
 
-        VehicleResponse result = response.getContent().get(0);
+        VehicleResponse result = response.getContent().getFirst();
 
         assertThat(result.externalId()).isEqualTo("VEHICLE-001");
         assertThat(result.modelName()).isEqualTo("IONIQ 5");

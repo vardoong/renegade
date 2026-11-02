@@ -3,7 +3,7 @@ package com.renegade.vehicle.dto;
 import com.renegade.vehicle.Vehicle;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "차량 정보 응답")
 public record VehicleResponse(
@@ -33,9 +33,9 @@ public record VehicleResponse(
 
         @Schema(
                 description = "차량 등록 일시",
-                example = "2026-10-30T15:30:00"
+                example = "2026-10-30T15:30:00Z"
         )
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
     public static VehicleResponse from(Vehicle vehicle) {
         return new VehicleResponse(
