@@ -1,5 +1,6 @@
 package com.renegade.vehicle;
 
+import com.renegade.global.config.SpringDataConfig;
 import com.renegade.global.exception.BusinessException;
 import com.renegade.global.exception.ErrorCode;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(VehicleController.class)
+@Import(SpringDataConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 class VehicleControllerTest {
 
@@ -92,7 +95,7 @@ class VehicleControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(1))
                 .andExpect(jsonPath("$.content[0].externalId").value("VEHICLE-001"))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.page.totalElements").value(1));
 
         verify(vehicleService).getList(pageable);
     }

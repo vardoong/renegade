@@ -1,5 +1,6 @@
 package com.renegade.telemetry;
 
+import com.renegade.global.config.SpringDataConfig;
 import com.renegade.global.exception.BusinessException;
 import com.renegade.global.exception.ErrorCode;
 import com.renegade.telemetry.dto.TelemetryCreateRequest;
@@ -11,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TelemetryController.class)
+@Import(SpringDataConfig.class)
 @AutoConfigureMockMvc(addFilters = false)
 class TelemetryControllerTest {
 
@@ -223,7 +226,7 @@ class TelemetryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].id").value(10))
                 .andExpect(jsonPath("$.content[0].vehicleId").value(1))
-                .andExpect(jsonPath("$.totalElements").value(1));
+                .andExpect(jsonPath("$.page.totalElements").value(1));
 
         verify(telemetryService)
                 .getList(vehicleId, pageable);
@@ -254,7 +257,7 @@ class TelemetryControllerTest {
                 ))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(0))
-                .andExpect(jsonPath("$.totalElements").value(0));
+                .andExpect(jsonPath("$.page.totalElements").value(0));
 
         verify(telemetryService)
                 .getList(vehicleId, pageable);
