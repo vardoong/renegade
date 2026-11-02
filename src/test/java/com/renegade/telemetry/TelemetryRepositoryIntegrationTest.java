@@ -14,7 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +41,7 @@ class TelemetryRepositoryIntegrationTest {
                 .build());
     }
 
-    private Telemetry saveTelemetry(Vehicle vehicle, LocalDateTime timestamp) {
+    private Telemetry saveTelemetry(Vehicle vehicle, Instant timestamp) {
         return telemetryRepository.saveAndFlush(Telemetry.builder()
                 .vehicle(vehicle)
                 .speed(60.0)
@@ -58,7 +59,7 @@ class TelemetryRepositoryIntegrationTest {
     void shouldSaveAndFindTelemetry()  {
         // given
         Vehicle vehicle = saveVehicle("VEHICLE-001");
-        LocalDateTime timestamp = LocalDateTime.of(2026, 10, 30, 10, 0);
+        Instant timestamp = Instant.parse("2026-10-30T12:30:00Z");
 
         // when
         Telemetry saved = saveTelemetry(vehicle, timestamp);
@@ -78,14 +79,14 @@ class TelemetryRepositoryIntegrationTest {
         Vehicle vehicle = saveVehicle("VEHICLE-001");
         Vehicle other = saveVehicle("VEHICLE-002");
 
-        LocalDateTime base = LocalDateTime.of(2026, 10, 30, 10, 0);
+        Instant base = Instant.parse("2026-10-30T12:30:00Z");
 
         for (int i = 0; i < 5; i++) {
-            saveTelemetry(vehicle, base.plusMinutes(i));
+            saveTelemetry(vehicle, base.plus(i, ChronoUnit.MINUTES));
         }
 
         // 다른 차량의 데이터는 조회 결과에서 제외되어야 함
-        saveTelemetry(other, base.plusHours(1));
+        saveTelemetry(other, base.plusSeconds(3600));
 
         PageRequest pageable = PageRequest.of(
                 1,
@@ -111,8 +112,8 @@ class TelemetryRepositoryIntegrationTest {
         assertThat(page.getContent())
                 .extracting(Telemetry::getTimestamp)
                 .containsExactly(
-                        base.plusMinutes(2),
-                        base.plusMinutes(1)
+                        base.plusSeconds(120),
+                        base.plusSeconds(60)
                 );
     }
 
@@ -122,8 +123,8 @@ class TelemetryRepositoryIntegrationTest {
         // given
         Vehicle vehicle = saveVehicle("VEHICLE-001");
 
-        LocalDateTime earlier = LocalDateTime.of(2026, 10, 30, 9, 0);
-        LocalDateTime latestTime = earlier.plusHours(1);
+        Instant earlier = Instant.parse("2026-10-30T12:30:00Z");
+        Instant latestTime = earlier.plus(1, ChronoUnit.DAYS);
 
         saveTelemetry(vehicle, earlier);
         saveTelemetry(vehicle, latestTime);

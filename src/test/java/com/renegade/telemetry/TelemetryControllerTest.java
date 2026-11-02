@@ -21,7 +21,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,8 +51,7 @@ class TelemetryControllerTest {
     @MockitoBean
     private TelemetryService telemetryService;
 
-    private final LocalDateTime timestamp =
-            LocalDateTime.of(2026, 10, 29, 21, 30);
+    private final Instant timestamp = Instant.parse("2026-10-29T12:30:00Z");
 
     private TelemetryResponse response() {
         return new TelemetryResponse(
@@ -352,7 +352,7 @@ class TelemetryControllerTest {
         values.put("temperature", "30.5");
         values.put("latitude", "37.5665");
         values.put("longitude", "126.9780");
-        values.put("timestamp", "\"2026-10-29T21:30:00\"");
+        values.put("timestamp", "\"2026-10-29T12:30:00Z\"");
 
         if (!values.containsKey(field)) {
             throw new IllegalArgumentException("Unknown telemetry field: " + field);
@@ -419,7 +419,7 @@ class TelemetryControllerTest {
     @Test
     @DisplayName("타임스탬프 경계값: 미래 시각이면 400을 반환한다")
     void createTelemetryRejectsFutureTimestamp() throws Exception {
-        LocalDateTime futureTimestamp = LocalDateTime.now().plusDays(1);
+        Instant futureTimestamp = Instant.now().plus(1, ChronoUnit.DAYS);
 
         assertInvalidTelemetryField(
                 "timestamp",
@@ -487,7 +487,7 @@ class TelemetryControllerTest {
     void createTelemetryRejectsInvalidFieldTypes(String field) throws Exception {
         // given
         String invalidValue = switch (field) {
-            case "timestamp" -> "12345";
+            case "timestamp" -> "invalid-timestamp";
             default -> "\"not-a-number\"";
         };
 

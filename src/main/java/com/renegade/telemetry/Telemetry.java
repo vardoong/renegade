@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -45,11 +45,11 @@ public class Telemetry {
     private Double longitude;
 
     @Column(nullable = false)
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     @CreatedDate
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Builder
     private Telemetry(
@@ -60,7 +60,7 @@ public class Telemetry {
             Double temperature,
             Double latitude,
             Double longitude,
-            LocalDateTime timestamp
+            Instant timestamp
     ) {
         this.vehicle = vehicle;
         this.speed = speed;

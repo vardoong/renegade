@@ -8,6 +8,7 @@ import com.renegade.vehicle.Vehicle;
 import com.renegade.vehicle.VehicleRepository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -22,7 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,11 +46,11 @@ class TelemetryServiceTest {
 
     private Vehicle vehicle;
     private Telemetry telemetry;
-    private LocalDateTime timestamp;
+    private Instant timestamp;
 
     @BeforeEach
     void setUp() {
-        timestamp = LocalDateTime.of(2026, 10, 29, 21, 30);
+        timestamp = Instant.parse("2026-10-29T12:30:00Z");
 
         vehicle = Vehicle.builder()
                 .externalId("VEHICLE-001")
@@ -72,7 +73,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 텔레메트리_등록_성공() {
+    @DisplayName("텔레메트리 등록 성공")
+    void createTelemetrySuccessfully() {
         // given
         TelemetryCreateRequest request = new TelemetryCreateRequest(
                 1L,
@@ -110,7 +112,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 존재하지_않는_차량에_텔레메트리_등록_실패() {
+    @DisplayName("존재하지 않는 차량에 텔레메트리 등록 실패")
+    void createTelemetryFailsWhenVehicleDoesNotExist() {
         // given
         TelemetryCreateRequest request = new TelemetryCreateRequest(
                 999L,
@@ -140,7 +143,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 텔레메트리_단건_조회_성공() {
+    @DisplayName("텔레메트리 단건 조회 성공")
+    void getTelemetrySuccessfully() {
         // given
         when(telemetryRepository.findById(1L))
                 .thenReturn(Optional.of(telemetry));
@@ -155,7 +159,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 존재하지_않는_텔레메트리_조회_실패() {
+    @DisplayName("존재하지 않는 텔레메트리 조회 실패")
+    void getTelemetryFailsWhenTelemetryDoesNotExist() {
         // given
         when(telemetryRepository.findById(999L))
                 .thenReturn(Optional.empty());
@@ -171,7 +176,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 차량별_텔레메트리_목록_조회_성공() {
+    @DisplayName("차량별 텔레메트리 목록 조회 성공")
+    void getTelemetryListByVehicleSuccessfully() {
         // given
         Pageable pageable = PageRequest.of(0, 20);
 
@@ -190,7 +196,7 @@ class TelemetryServiceTest {
         // then
         assertThat(response.getTotalElements()).isEqualTo(1);
         assertThat(response.getContent()).hasSize(1);
-        assertThat(response.getContent().get(0).speed())
+        assertThat(response.getContent().getFirst().speed())
                 .isEqualTo(60.0);
 
         verify(telemetryRepository)
@@ -198,7 +204,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 차량별_최신_텔레메트리_조회_성공() {
+    @DisplayName("차량별 최신 텔레메트리 조회 성공")
+    void getLatestTelemetryByVehicleSuccessfully() {
         // given
         when(vehicleRepository.existsById(1L))
                 .thenReturn(true);
@@ -217,7 +224,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 텔레메트리가_없는_차량의_최신_조회_실패() {
+    @DisplayName("텔레메트리가 없는 차량의 최신 조회 실패")
+    void getLatestTelemetryFailsWhenVehicleHasNoTelemetry() {
         // given
         when(vehicleRepository.existsById(1L))
                 .thenReturn(true);
@@ -237,7 +245,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 존재하지_않는_차량의_목록_조회_실패() {
+    @DisplayName("존재하지 않는 차량의 목록 조회 실패")
+    void getTelemetryListFailsWhenVehicleDoesNotExist() {
         // given
         Long vehicleId = 999L;
         Pageable pageable = PageRequest.of(0, 20);
@@ -259,7 +268,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 존재하지_않는_차량의_최신_조회_실패() {
+    @DisplayName("존재하지 않는 차량의 최신 조회 실패")
+    void getLatestTelemetryFailsWhenVehicleDoesNotExist() {
         // given
         Long vehicleId = 999L;
 
@@ -280,7 +290,8 @@ class TelemetryServiceTest {
     }
 
     @Test
-    void 텔레메트리가_없는_차량의_목록_조회_성공() {
+    @DisplayName("텔레메트리가 없는 차량의 목록 조회 성공")
+    void getEmptyTelemetryListWhenVehicleHasNoTelemetry() {
         // given
         Long vehicleId = 1L;
         Pageable pageable = PageRequest.of(0, 20);

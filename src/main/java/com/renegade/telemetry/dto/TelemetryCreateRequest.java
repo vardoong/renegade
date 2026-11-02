@@ -3,7 +3,7 @@ package com.renegade.telemetry.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "텔레메트리 등록 요청")
 public record TelemetryCreateRequest(
@@ -71,6 +71,6 @@ public record TelemetryCreateRequest(
                 description = "텔레메트리 측정 시간",
                 example = "2026-10-30T15:30:00"
         )
-        LocalDateTime timestamp
+        Instant timestamp
 ) {
 }

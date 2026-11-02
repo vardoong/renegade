@@ -10,7 +10,7 @@ Content-Type: application/json
   "temperature": 32.5,
   "latitude": 37.5665,
   "longitude": 126.978,
-  "timestamp": "2026-10-30T11:25:38"
+  "timestamp": "2026-11-01T17:24:24Z"
 }
 
 ### 없는 차량의 telemetry 생성
@@ -25,7 +25,7 @@ Content-Type: application/json
   "temperature": 32.5,
   "latitude": 37.5665,
   "longitude": 126.978,
-  "timestamp": "2026-10-29T21:26:59"
+  "timestamp": "2026-11-01T17:24:24Z"
 }
 
 ### telemetry 단건 조회
@@ -64,7 +64,7 @@ Content-Type: application/json
   "temperature": 32.5,
   "latitude": 37.5665,
   "longitude": 126.978,
-  "timestamp": "2026-10-30T11:30:17"
+  "timestamp": "2026-11-01T17:24:24Z"
 }
 
 ### null 속도
@@ -79,5 +79,5 @@ Content-Type: application/json
   "temperature": 32.5,
   "latitude": 37.5665,
   "longitude": 126.978,
-  "timestamp": "2026-10-30T11:30:17"
+  "timestamp": "2026-11-01T17:24:24Z"
 }

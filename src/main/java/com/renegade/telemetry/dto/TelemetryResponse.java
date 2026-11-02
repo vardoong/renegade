@@ -3,7 +3,7 @@ package com.renegade.telemetry.dto;
 import com.renegade.telemetry.Telemetry;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Schema(description = "텔레메트리 응답")
 public record TelemetryResponse(
@@ -57,15 +57,15 @@ public record TelemetryResponse(
 
         @Schema(
                 description = "차량에서 센서 데이터를 측정한 시간",
-                example = "2026-10-30T15:30:00"
+                example = "2026-10-30T15:30:00Z"
         )
-        LocalDateTime timestamp,
+        Instant timestamp,
 
         @Schema(
                 description = "서버에 텔레메트리를 저장한 시간",
-                example = "2026-10-30T15:30:00"
+                example = "2026-10-30T15:30:00Z"
         )
-        LocalDateTime createdAt
+        Instant createdAt
 ) {
     public static TelemetryResponse from(Telemetry telemetry) {
         return new TelemetryResponse(
