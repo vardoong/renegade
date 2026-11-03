@@ -115,3 +115,7 @@ Backend와 Simulator는 실행 터미널에서 각각 `Ctrl+C`로 종료한다.
 ```bash
 docker compose stop
 ```
+
+## 측정 기록
+
+- [2026-11-03 Simulator 기준 측정](measurements/2026-11-03-simulator-baseline.md)
