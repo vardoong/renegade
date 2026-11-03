@@ -55,3 +55,8 @@ application-local.yml
 application-dev.yml
 application-prod.yml
 application-test.yml
+
+# python simulator
+simulator/.venv
+simulator/.env
+simulator/__pycache__/
