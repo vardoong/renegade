@@ -69,7 +69,7 @@ public record TelemetryCreateRequest(
         @PastOrPresent(message = "측정 시간은 미래일 수 없습니다.")
         @Schema(
                 description = "텔레메트리 측정 시간",
-                example = "2026-10-30T15:30:00"
+                example = "2026-10-30T15:30:00Z"
         )
         Instant timestamp
 ) {
