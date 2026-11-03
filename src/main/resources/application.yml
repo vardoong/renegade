@@ -19,3 +19,14 @@ spring:
 
   flyway:
     enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: # 접근할 endpoint
+          - health
+          - prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
