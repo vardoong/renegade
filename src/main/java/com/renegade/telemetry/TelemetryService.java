@@ -11,15 +11,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
 public class TelemetryService {
     private final TelemetryRepository telemetryRepository;
     private final VehicleRepository vehicleRepository;
+    private final TelemetryMetrics telemetryMetrics;
 
     @Transactional
     public TelemetryResponse create(TelemetryCreateRequest req) {
+        registerSaveMetrics();
+
         Vehicle vehicle = vehicleRepository.findById(req.vehicleId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
 
@@ -69,5 +74,20 @@ public class TelemetryService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.TELEMETRY_NOT_FOUND));
 
         return TelemetryResponse.from(telemetry);
+    }
+
+    private void registerSaveMetrics() {
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCompletion(int status) {
+                        if (status == STATUS_COMMITTED) {
+                            telemetryMetrics.recordSuccess();
+                        } else if (status == STATUS_ROLLED_BACK) {
+                            telemetryMetrics.recordFailure();
+                        }
+                    }
+                }
+        );
     }
 }
