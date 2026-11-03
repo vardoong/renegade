@@ -8,6 +8,7 @@ import com.renegade.vehicle.Vehicle;
 import com.renegade.vehicle.VehicleRepository;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,6 +44,9 @@ class TelemetryServiceTest {
     @Mock
     private VehicleRepository vehicleRepository;
 
+    @Mock
+    private TelemetryMetrics telemetryMetrics;
+
     @InjectMocks
     private TelemetryService telemetryService;
 
@@ -50,6 +56,8 @@ class TelemetryServiceTest {
 
     @BeforeEach
     void setUp() {
+        // 테스트 전 트랜잭션 동기화 init
+        TransactionSynchronizationManager.initSynchronization();
         timestamp = Instant.parse("2026-10-29T12:30:00Z");
 
         vehicle = Vehicle.builder()
@@ -70,6 +78,12 @@ class TelemetryServiceTest {
                 .longitude(126.9780)
                 .timestamp(timestamp)
                 .build();
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 테스트 후 트랜잭션 동기화 정리
+        TransactionSynchronizationManager.clearSynchronization();
     }
 
     @Test
@@ -109,6 +123,12 @@ class TelemetryServiceTest {
 
         assertThat(captor.getValue().getVehicle())
                 .isSameAs(vehicle);
+
+        verifyNoInteractions(telemetryMetrics);
+        TransactionSynchronizationManager.getSynchronizations()
+                .forEach(sync -> sync.afterCompletion(TransactionSynchronization.STATUS_COMMITTED));
+        verify(telemetryMetrics).recordSuccess();
+        verify(telemetryMetrics, never()).recordFailure();
     }
 
     @Test
@@ -140,6 +160,12 @@ class TelemetryServiceTest {
 
         verify(telemetryRepository, never())
                 .save(any(Telemetry.class));
+
+        verifyNoInteractions(telemetryMetrics);
+        TransactionSynchronizationManager.getSynchronizations()
+                .forEach(sync -> sync.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+        verify(telemetryMetrics).recordFailure();
+        verify(telemetryMetrics, never()).recordSuccess();
     }
 
     @Test
