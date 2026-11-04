@@ -5,8 +5,8 @@
     "name": "ad4t9kv",
     "namespace": "default",
     "uid": "191da2c3-c32c-4fa4-aff8-6c59d3758758",
-    "resourceVersion": "1793712485902007",
-    "generation": 13,
+    "resourceVersion": "1793776390103003",
+    "generation": 15,
     "creationTimestamp": "2026-11-03T09:15:36Z",
     "labels": {
       "grafana.app/deprecatedInternalID": "854398195429376"
@@ -15,7 +15,7 @@
       "grafana.app/createdBy": "user:eg365edxo696of",
       "grafana.app/saved-from-ui": "Grafana v13.3.0 (6f8ce3c693)",
       "grafana.app/updatedBy": "user:eg365edxo696of",
-      "grafana.app/updatedTimestamp": "2026-11-03T13:28:05Z"
+      "grafana.app/updatedTimestamp": "2026-11-04T07:13:10Z"
     }
   },
   "spec": {
@@ -1008,6 +1008,122 @@
             }
           }
         }
+      },
+      "panel-9": {
+        "kind": "Panel",
+        "spec": {
+          "id": 9,
+          "title": "HikariCP 평균 커넥션 획득 시간",
+          "description": "",
+          "links": [],
+          "data": {
+            "kind": "QueryGroup",
+            "spec": {
+              "queries": [
+                {
+                  "kind": "PanelQuery",
+                  "spec": {
+                    "query": {
+                      "kind": "DataQuery",
+                      "group": "prometheus",
+                      "version": "v0",
+                      "datasource": {
+                        "name": "bg366ryhsor9cf"
+                      },
+                      "spec": {
+                        "editorMode": "code",
+                        "expr": "1000 *\nsum(rate(hikaricp_connections_acquire_seconds_sum{application=\"renegade\"}[$__rate_interval]))\n/\nsum(rate(hikaricp_connections_acquire_seconds_count{application=\"renegade\"}[$__rate_interval]))",
+                        "legendFormat": "커넥션 획득에 걸린 총시간 ÷ 획득 횟수",
+                        "range": true
+                      }
+                    },
+                    "refId": "A",
+                    "hidden": false
+                  }
+                }
+              ],
+              "transformations": [],
+              "queryOptions": {}
+            }
+          },
+          "vizConfig": {
+            "kind": "VizConfig",
+            "group": "timeseries",
+            "version": "13.3.0",
+            "spec": {
+              "options": {
+                "legend": {
+                  "calcs": [],
+                  "displayMode": "list",
+                  "placement": "bottom",
+                  "showLegend": true
+                },
+                "tooltip": {
+                  "hideZeros": false,
+                  "mode": "single",
+                  "sort": "none"
+                }
+              },
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "ms",
+                  "min": 0,
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": 0,
+                        "color": "green"
+                      },
+                      {
+                        "value": 80,
+                        "color": "red"
+                      }
+                    ]
+                  },
+                  "color": {
+                    "mode": "palette-classic"
+                  },
+                  "custom": {
+                    "axisBorderShow": false,
+                    "axisCenteredZero": false,
+                    "axisColorMode": "text",
+                    "axisLabel": "",
+                    "axisPlacement": "auto",
+                    "barAlignment": 0,
+                    "barWidthFactor": 0.6,
+                    "drawStyle": "line",
+                    "fillOpacity": 0,
+                    "gradientMode": "none",
+                    "hideFrom": {
+                      "legend": false,
+                      "tooltip": false,
+                      "viz": false
+                    },
+                    "insertNulls": false,
+                    "lineInterpolation": "linear",
+                    "lineWidth": 1,
+                    "pointSize": 5,
+                    "scaleDistribution": {
+                      "type": "linear"
+                    },
+                    "showPoints": "auto",
+                    "showValues": false,
+                    "spanNulls": false,
+                    "stacking": {
+                      "group": "A",
+                      "mode": "none"
+                    },
+                    "thresholdsStyle": {
+                      "mode": "off"
+                    }
+                  }
+                },
+                "overrides": []
+              }
+            }
+          }
+        }
       }
     },
     "layout": {
@@ -1067,6 +1183,15 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
+                "name": "panel-8"
+              }
+            }
+          },
+          {
+            "kind": "AutoGridLayoutItem",
+            "spec": {
+              "element": {
+                "kind": "ElementReference",
                 "name": "panel-6"
               }
             }
@@ -1076,7 +1201,7 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
-                "name": "panel-7"
+                "name": "panel-9"
               }
             }
           },
@@ -1085,7 +1210,7 @@
             "spec": {
               "element": {
                 "kind": "ElementReference",
-                "name": "panel-8"
+                "name": "panel-7"
               }
             }
           }
