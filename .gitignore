@@ -60,3 +60,4 @@ application-test.yml
 simulator/.venv
 simulator/.env
 simulator/__pycache__/
+load-test/results/
