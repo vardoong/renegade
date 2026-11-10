@@ -1,5 +1,10 @@
 package com.renegade.telemetry.diagnostics;
 
+import net.ttddyy.dsproxy.ConnectionInfo;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 final class TelemetryRequestTiming {
     enum Phase {
         ACQUIRE, SQL, COMMIT
@@ -8,9 +13,11 @@ final class TelemetryRequestTiming {
     private static final ThreadLocal<TelemetryRequestTiming> CURRENT = new ThreadLocal<>();
 
     private final long startedAt = System.nanoTime();
+    private final Map<ConnectionInfo, Long> borrowedAt = new IdentityHashMap<>(1);
     private long acquireNanos;
     private long sqlNanos;
     private long commitNanos;
+    private long holdNanos;
 
     static TelemetryRequestTiming start() {
         TelemetryRequestTiming timing = new TelemetryRequestTiming();
@@ -34,6 +41,17 @@ final class TelemetryRequestTiming {
         }
     }
 
+    void connectionBorrowed(ConnectionInfo connection, long now) {
+        borrowedAt.put(connection, now);
+    }
+
+    void connectionReturned(ConnectionInfo connection, long now) {
+        Long borrowed = borrowedAt.remove(connection);
+        if (borrowed != null) {
+            holdNanos += now - borrowed;
+        }
+    }
+
     long elapsedNanos() {
         return System.nanoTime() - startedAt;
     }
@@ -48,5 +66,9 @@ final class TelemetryRequestTiming {
 
     double commitMillis() {
         return commitNanos / 1_000_000.0;
+    }
+
+    double holdMillis() {
+        return holdNanos / 1_000_000.0;
     }
 }

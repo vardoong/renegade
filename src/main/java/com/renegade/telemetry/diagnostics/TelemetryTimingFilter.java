@@ -42,9 +42,9 @@ final class TelemetryTimingFilter extends OncePerRequestFilter {
             TelemetryRequestTiming.clear();
             long totalNanos = timing.elapsedNanos();
             if (totalNanos >= thresholdNanos) {
-                log.info("telemetry timing requestId={} status={} completed={} totalMs={} acquireMs={} sqlMs={} commitMs={}",
+                log.info("telemetry timing requestId={} status={} completed={} totalMs={} acquireMs={} sqlMs={} commitMs={} holdMs={}",
                         UUID.randomUUID(), response.getStatus(), completed, totalNanos / 1_000_000.0,
-                        timing.acquireMillis(), timing.sqlMillis(), timing.commitMillis());
+                        timing.acquireMillis(), timing.sqlMillis(), timing.commitMillis(), timing.holdMillis());
             }
         }
     }
