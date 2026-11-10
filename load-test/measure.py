@@ -49,7 +49,12 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     output = args.output.resolve()
     script = Path(__file__).resolve().with_name("telemetry.js")
-    command = ["k6", "run", f"--summary-export={output / 'summary.json'}", str(script)]
+    command = [
+        "k6", "run",
+        f"--summary-export={output / 'summary.json'}",
+        "--out", f"json={output / 'k6-metrics.json.gz'}",
+        str(script),
+    ]
     env = dict(os.environ, RATE=str(args.rate), DURATION=args.duration)
     metadata = {
         "start_time": timestamp(), "command": command,
