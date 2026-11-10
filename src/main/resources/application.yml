@@ -33,3 +33,9 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+
+renegade:
+  diagnostics:
+    telemetry-timing:
+      enabled: true
+      threshold-ms: 30
