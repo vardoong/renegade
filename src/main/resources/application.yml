@@ -39,5 +39,5 @@ management:
 renegade:
   diagnostics:
     telemetry-timing:
-      enabled: true
+      enabled: false
       threshold-ms: 30
