@@ -108,6 +108,12 @@ env -u POSTGRES_DB -u POSTGRES_USER -u POSTGRES_PASSWORD \
 - Simulator의 Python 테스트는 별도로 실행
 - 준비 및 실행 방법은 [Simulator README](simulator/README.md#테스트) 참고
 
+### CI
+
+- GitHub Actions가 push·PR마다 `./gradlew clean test`로 전체 백엔드 테스트 실행
+  - 저장소의 **Actions → Backend Tests**에서 결과 확인
+  - `test-reports` 아티팩트에서 테스트 보고서 확인
+
 ---
 
 ## Troubleshooting — 커넥션 풀 획득 지연 개선
@@ -127,8 +133,7 @@ env -u POSTGRES_DB -u POSTGRES_USER -u POSTGRES_PASSWORD \
 두 실행 모두 HTTP·체크·저장 실패는 0건이며, 성공 건수와 DB 행 증가량이 일치했습니다.
 조건당 1회 비교한 결과로, 현재 로컬 부하에 한정한 선택입니다. 포화의 촉발 원인은 미확정입니다.
 
-상세 조건과 조사 과정, 원본 결과는
-[Day 9 측정 기록](docs/measurements/2026-11-10-k6-2400-vu150.md)을 참고하세요.
+상세 조건과 조사 과정, 원본 결과는 [Day 9 측정 기록](docs/measurements/2026-11-10-k6-2400-vu150.md)을 참고하세요.
 
 ---
 
