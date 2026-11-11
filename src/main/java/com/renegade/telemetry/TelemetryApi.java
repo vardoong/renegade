@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import java.time.Instant;
+
 @Tag(
         name = "텔레메트리",
         description = "차량 센서 데이터 등록 및 조회 API"
@@ -82,6 +84,14 @@ public interface TelemetryApi {
                     description = "조회할 차량 ID",
                     example = "1"
             ) Long vehicleId,
+            @Parameter(
+                    description = "timestamp 기간 조회 시작점",
+                    example = "2026-11-11T15:00:00Z"
+            ) Instant from,
+            @Parameter(
+                    description = "timestamp 기간 조회 끝점",
+                    example = "2026-11-12T15:00:00Z"
+            )Instant to,
             @ParameterObject Pageable pageable
     );
 

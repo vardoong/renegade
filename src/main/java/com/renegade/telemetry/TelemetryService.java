@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.time.Instant;
+
 @Service
 @RequiredArgsConstructor
 public class TelemetryService {
@@ -55,13 +57,32 @@ public class TelemetryService {
     @Transactional(readOnly = true)
     public Page<TelemetryResponse> getList(
             Long vehicleId,
+            Instant from,
+            Instant to,
             Pageable pageable) {
         if (!vehicleRepository.existsById(vehicleId)) {
             throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
         }
 
-        return telemetryRepository.findByVehicle_Id(vehicleId, pageable)
-                .map(TelemetryResponse::from);
+        Page<Telemetry> result;
+        if (from != null && to != null) {
+            if(!from.isBefore(to)) {
+                throw new BusinessException(ErrorCode.INVALID_DATE_REQUEST);
+            }
+            result = telemetryRepository
+                    .findByVehicle_idAndTimestampGreaterThanEqualAndTimestampLessThan(
+                            vehicleId, from, to, pageable);
+        } else if (from != null) {
+            result = telemetryRepository.findByVehicle_IdAndTimestampGreaterThanEqual(
+                    vehicleId, from, pageable);
+        } else if (to != null) {
+            result = telemetryRepository.findByVehicle_IdAndTimestampLessThan(
+                    vehicleId, to, pageable);
+        } else {
+            result = telemetryRepository.findByVehicle_Id(vehicleId, pageable);
+        }
+
+        return result.map(TelemetryResponse::from);
     }
 
     @Transactional(readOnly = true)

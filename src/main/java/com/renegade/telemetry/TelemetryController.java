@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+
 @RestController
 @RequiredArgsConstructor
 public class TelemetryController implements TelemetryApi {
@@ -39,13 +41,15 @@ public class TelemetryController implements TelemetryApi {
     @GetMapping("/api/v1/vehicles/{vehicleId}/telemetry")
     public ResponseEntity<Page<TelemetryResponse>> findList(
             @PathVariable("vehicleId") Long vehicleId,
+            @RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to,
             @PageableDefault(
                     size = 20,
                     sort = {"timestamp", "id"},
                     direction = Sort.Direction.DESC
             ) Pageable pageable
     ) {
-        return ResponseEntity.ok(telemetryService.getList(vehicleId, pageable));
+        return ResponseEntity.ok(telemetryService.getList(vehicleId, from, to, pageable));
     }
 
     @GetMapping("/api/v1/vehicles/{vehicleId}/telemetry/latest")
