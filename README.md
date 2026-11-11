@@ -62,11 +62,7 @@ set -a
 source .env
 set +a
 ```
-3. 테스트 실행
-```shell
-./gradlew test
-```
-4. 애플리케이션 실행
+3. 애플리케이션 실행
 ```shell
 ./gradlew bootRun
 ```
@@ -80,7 +76,14 @@ set +a
 
 ### Tests
 
-PostgreSQL 실행 및 환경변수 적용 후 다음 명령으로 전체 테스트를 실행합니다.
+- Java 21
+- Docker
+- 개발용 PostgreSQL이나 `.env` 설정 없이 테스트
+  - Testcontainers가 임시 PostgreSQL을 준비
+  - Flyway가 스키마를 적용
+  - 테스트 종료 후 임시 컨테이너 정리
+
+테스트 실행:
 
 ```shell
 ./gradlew clean test
@@ -89,7 +92,43 @@ PostgreSQL 실행 및 환경변수 적용 후 다음 명령으로 전체 테스�
 - JUnit 5 기반 단위 테스트
 - Controller API 테스트
 - Testcontainers 기반 Repository 통합 테스트
+- Testcontainers 기반 애플리케이션 기동 테스트 (`contextLoads`)
 - 입력값 유효성 및 예외 처리 테스트
+
+개발 DB 환경변수 없이 실행:
+
+```shell
+env -u POSTGRES_DB -u POSTGRES_USER -u POSTGRES_PASSWORD \
+  ./gradlew clean test
+```
+
+- 테스트 결과 보고서: `build/reports/tests/test/index.html`
+
+참고사항:
+- Simulator의 Python 테스트는 별도로 실행
+- 준비 및 실행 방법은 [Simulator README](simulator/README.md#테스트) 참고
+
+---
+
+## Troubleshooting — 커넥션 풀 획득 지연 개선
+
+1. 로컬 2,400 req/s 쓰기 부하에서 순간 지연과 반복 누락 발생
+2. 요청별 계측으로 커넥션 획득 지연 확인, 풀 10개 사용·61개 스레드 대기 관측
+3. 동일 DB 백업에서 풀 10·15를 각각 4분·150 VU로 재검증
+   1. 풀 15개에서 획득·응답 지연이 줄고 반복 누락이 관측되지 않아 최종 채택
+
+| 지표 | 풀 10 | 풀 15 |
+| --- | ---: | ---: |
+| k6 전체 HTTP 응답 p99 | 8.74 ms | 6.67 ms |
+| k6 전체 HTTP 응답 최대 | 168.58 ms | 108.74 ms |
+| 앱 커넥션 획득 시간 최대 | 165.30 ms | 96.02 ms |
+| 시작하지 못한 반복 (`dropped_iterations`) | 87건 | 0건 |
+
+두 실행 모두 HTTP·체크·저장 실패는 0건이며, 성공 건수와 DB 행 증가량이 일치했습니다.
+조건당 1회 비교한 결과로, 현재 로컬 부하에 한정한 선택입니다. 포화의 촉발 원인은 미확정입니다.
+
+상세 조건과 조사 과정, 원본 결과는
+[Day 9 측정 기록](docs/measurements/2026-11-10-k6-2400-vu150.md)을 참고하세요.
 
 ---
 

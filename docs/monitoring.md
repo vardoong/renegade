@@ -116,6 +116,19 @@ Backend와 Simulator는 실행 터미널에서 각각 `Ctrl+C`로 종료한다.
 docker compose stop
 ```
 
+## 요청별 진단 로그
+
+기본값은 풀 15개, 진단 로그 비활성이다. 부하 실험에서는 DB 환경변수를 적용한 뒤 실행한다.
+
+```bash
+./gradlew bootRun --args='--renegade.diagnostics.telemetry-timing.enabled=true --renegade.diagnostics.telemetry-timing.threshold-ms=30 --logging.file.name=load-test/results/telemetry-timing.log'
+```
+
+- 최초 확인 시 `threshold-ms=0`으로 실행하고 텔레메트리 저장 요청 한 건을 보낸다.
+- 파일에 `telemetry timing`과 전체·획득·SQL·커밋·보유 시간이 기록되면 종료하고, 위 명령의 `30`으로 다시 실행해 측정한다.
+- 풀 비교 시 `--spring.datasource.hikari.maximum-pool-size=10` 또는 `15`를 실행 인자에 추가한다.
+- 실험 종료 후 앱을 중지하고 개발 DB용 `.env`를 다시 적용한 뒤, 인자 없이 `./gradlew bootRun`으로 실행한다. 기본 풀 15개와 진단 로그 비활성으로 돌아온다.
+
 ## 측정 기록
 
 - [2026-11-03 Simulator 기준 측정](measurements/2026-11-03-simulator-baseline.md)
