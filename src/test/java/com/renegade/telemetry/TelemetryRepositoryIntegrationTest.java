@@ -152,4 +152,76 @@ class TelemetryRepositoryIntegrationTest {
                 .findTopByVehicle_IdOrderByTimestampDescIdDesc(vehicle.getId()))
                 .isEmpty();
     }
+
+    @Test
+    @DisplayName("기간 조회는 from을 포함하고 to와 다른 차량을 제외한다")
+    void shouldFilterByHalfOpenRangeAndVehicle() {
+        Vehicle vehicle = saveVehicle("RANGE-001");
+        Vehicle other = saveVehicle("RANGE-002");
+        Instant from = Instant.parse("2026-11-11T00:00:00Z");
+        Instant to = from.plusSeconds(60);
+        saveTelemetry(vehicle, from.minusNanos(1000));
+        Telemetry start = saveTelemetry(vehicle, from);
+        Telemetry end = saveTelemetry(vehicle, to.minusNanos(1000));
+        saveTelemetry(vehicle, to);
+        saveTelemetry(other, from);
+
+        Page<Telemetry> result = telemetryRepository
+                .findByVehicle_idAndTimestampGreaterThanEqualAndTimestampLessThan(
+                        vehicle.getId(), from, to, PageRequest.of(0, 20,
+                                Sort.by(Sort.Order.desc("timestamp"), Sort.Order.desc("id"))));
+
+        assertThat(result.getContent()).extracting(Telemetry::getId)
+                .containsExactly(end.getId(), start.getId());
+        assertThat(result.getTotalElements()).isEqualTo(2);
+        assertThat(telemetryRepository
+                .findByVehicle_idAndTimestampGreaterThanEqualAndTimestampLessThan(
+                        vehicle.getId(), to.plusSeconds(1), to.plusSeconds(2), PageRequest.of(0, 20)))
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("from만 있으면 하한을 포함하고 to만 있으면 상한을 제외한다")
+    void shouldFilterWithSingleBound() {
+        Vehicle vehicle = saveVehicle("BOUND-001");
+        Vehicle other = saveVehicle("BOUND-002");
+        Instant bound = Instant.parse("2026-11-11T00:00:00Z");
+        Telemetry before = saveTelemetry(vehicle, bound.minusSeconds(1));
+        Telemetry at = saveTelemetry(vehicle, bound);
+        Telemetry after = saveTelemetry(vehicle, bound.plusSeconds(1));
+        saveTelemetry(other, bound.minusSeconds(1));
+        saveTelemetry(other, bound.plusSeconds(1));
+        PageRequest pageable = PageRequest.of(0, 20, Sort.by("timestamp").descending());
+
+        assertThat(telemetryRepository.findByVehicle_IdAndTimestampGreaterThanEqual(
+                vehicle.getId(), bound, pageable).getContent())
+                .extracting(Telemetry::getId).containsExactly(after.getId(), at.getId());
+        assertThat(telemetryRepository.findByVehicle_IdAndTimestampLessThan(
+                vehicle.getId(), bound, pageable).getContent())
+                .extracting(Telemetry::getId).containsExactly(before.getId());
+    }
+
+    @Test
+    @DisplayName("기간 필터 후에도 전체 건수와 시간·ID 내림차순 페이지를 유지한다")
+    void shouldPageFilteredResultsWithStableSort() {
+        Vehicle vehicle = saveVehicle("PAGE-001");
+        Instant from = Instant.parse("2026-11-11T00:00:00Z");
+        Telemetry first = saveTelemetry(vehicle, from);
+        Telemetry second = saveTelemetry(vehicle, from.plusSeconds(1));
+        saveTelemetry(vehicle, from.plusSeconds(1));
+        saveTelemetry(vehicle, from.plusSeconds(2));
+        saveTelemetry(vehicle, from.minusSeconds(1));
+        saveTelemetry(vehicle, from.plusSeconds(3));
+
+        Page<Telemetry> result = telemetryRepository
+                .findByVehicle_idAndTimestampGreaterThanEqualAndTimestampLessThan(
+                        vehicle.getId(), from, from.plusSeconds(3), PageRequest.of(1, 2,
+                                Sort.by(Sort.Order.desc("timestamp"), Sort.Order.desc("id"))));
+
+        assertThat(result.getTotalElements()).isEqualTo(4);
+        assertThat(result.getTotalPages()).isEqualTo(2);
+        assertThat(result.getNumber()).isEqualTo(1);
+        assertThat(result.getContent()).extracting(Telemetry::getId)
+                .containsExactly(second.getId(), first.getId());
+    }
 }

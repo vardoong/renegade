@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -213,7 +214,7 @@ class TelemetryControllerTest {
                 1
         );
 
-        when(telemetryService.getList(vehicleId, pageable))
+        when(telemetryService.getList(vehicleId, null, null, pageable))
                 .thenReturn(page);
 
         // when & then
@@ -229,7 +230,7 @@ class TelemetryControllerTest {
                 .andExpect(jsonPath("$.page.totalElements").value(1));
 
         verify(telemetryService)
-                .getList(vehicleId, pageable);
+                .getList(vehicleId, null, null, pageable);
     }
 
     @Test
@@ -247,7 +248,7 @@ class TelemetryControllerTest {
                 )
         );
 
-        when(telemetryService.getList(vehicleId, pageable))
+        when(telemetryService.getList(vehicleId, null, null, pageable))
                 .thenReturn(Page.empty(pageable));
 
         // when & then
@@ -260,7 +261,7 @@ class TelemetryControllerTest {
                 .andExpect(jsonPath("$.page.totalElements").value(0));
 
         verify(telemetryService)
-                .getList(vehicleId, pageable);
+                .getList(vehicleId, null, null, pageable);
     }
 
     @Test
@@ -271,6 +272,8 @@ class TelemetryControllerTest {
 
         when(telemetryService.getList(
                 eq(vehicleId),
+                org.mockito.ArgumentMatchers.isNull(),
+                org.mockito.ArgumentMatchers.isNull(),
                 any(Pageable.class)
         )).thenThrow(
                 new BusinessException(ErrorCode.VEHICLE_NOT_FOUND)
@@ -489,10 +492,8 @@ class TelemetryControllerTest {
     })
     void createTelemetryRejectsInvalidFieldTypes(String field) throws Exception {
         // given
-        String invalidValue = switch (field) {
-            case "timestamp" -> "invalid-timestamp";
-            default -> "\"not-a-number\"";
-        };
+        String invalidValue = field.equals("timestamp") ?
+            "invalid-timestamp" : "\"not-a-number\"";
 
         // when & then
         mockMvc.perform(post("/api/v1/telemetry")
@@ -560,5 +561,59 @@ class TelemetryControllerTest {
     @ValueSource(doubles = {-180.0, 180.0})
     void createTelemetryAcceptsValidLongitude(double longitude) throws Exception {
         assertValidTelemetryField("longitude", Double.toString(longitude));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "2026-11-11T00:00:00Z,2026-11-12T00:00:00Z",
+            "2026-11-11T00:00:00Z,",
+            ",2026-11-12T00:00:00Z",
+            "2026-11-11T09:00:00+09:00,2026-11-12T09:00:00+09:00"
+    })
+    @DisplayName("기간 파라미터는 각각 생략 가능하며 시각과 페이지 설정을 서비스에 전달한다")
+    void getListWithOptionalDateBounds(String fromValue, String toValue) throws Exception {
+        Instant from = fromValue == null ? null : Instant.parse(fromValue);
+        Instant to = toValue == null ? null : Instant.parse(toValue);
+        Pageable pageable = PageRequest.of(1, 2,
+                Sort.by(Sort.Order.desc("timestamp"), Sort.Order.desc("id")));
+        when(telemetryService.getList(1L, from, to, pageable))
+                .thenReturn(Page.empty(pageable));
+        var request = get("/api/v1/vehicles/{vehicleId}/telemetry", 1L)
+                .param("page", "1").param("size", "2");
+        if (fromValue != null) request.param("from", fromValue);
+        if (toValue != null) request.param("to", toValue);
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page.number").value(1))
+                .andExpect(jsonPath("$.page.size").value(2));
+
+        verify(telemetryService).getList(1L, from, to, pageable);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"from", "to"})
+    @DisplayName("기간 파라미터 형식이 잘못되면 400을 반환하고 서비스는 호출하지 않는다")
+    void getListRejectsInvalidDateFormat(String parameter) throws Exception {
+        mockMvc.perform(get("/api/v1/vehicles/{vehicleId}/telemetry", 1L)
+                        .param(parameter, "not-a-date"))
+                .andExpect(status().isBadRequest());
+
+        org.mockito.Mockito.verifyNoInteractions(telemetryService);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"2026-11-11T00:00:00Z", "2026-11-10T00:00:00Z"})
+    @DisplayName("잘못된 기간 범위의 비즈니스 예외는 400으로 응답한다")
+    void getListReturnsBadRequestForInvalidRange(String toValue) throws Exception {
+        Instant from = Instant.parse("2026-11-11T00:00:00Z");
+        Instant to = Instant.parse(toValue);
+        when(telemetryService.getList(eq(1L), eq(from), eq(to), any(Pageable.class)))
+                .thenThrow(new BusinessException(ErrorCode.INVALID_DATE_REQUEST));
+
+        mockMvc.perform(get("/api/v1/vehicles/{vehicleId}/telemetry", 1L)
+                        .param("from", from.toString()).param("to", toValue))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_DATE_REQUEST"));
     }
 }
