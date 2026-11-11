@@ -3,6 +3,11 @@ package com.renegade.vehicle;
 import com.renegade.global.config.SpringDataConfig;
 import com.renegade.global.exception.BusinessException;
 import com.renegade.global.exception.ErrorCode;
+import com.renegade.vehicle.dto.VehicleStatusResponse;
+import com.renegade.vehicle.enums.VehicleStatus;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import java.time.Instant;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -192,5 +197,45 @@ class VehicleControllerTest {
                 .andExpect(status().isConflict());
 
         verify(vehicleService).create(any(VehicleCreateRequest.class));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = VehicleStatus.class, names = {"DRIVING", "PARKED", "OFFLINE"})
+    @DisplayName("차량 상태와 마지막 서버 수신 시각을 JSON으로 반환한다")
+    void getVehicleStatusSuccessfully(VehicleStatus status) throws Exception {
+        Instant receivedAt = Instant.parse("2026-11-11T00:00:00Z");
+        when(vehicleService.getStatus(1L))
+                .thenReturn(new VehicleStatusResponse(1L, status, receivedAt));
+
+        mockMvc.perform(get("/api/v1/vehicles/{id}/status", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value(status.name()))
+                .andExpect(jsonPath("$.lastReceivedAt").value(receivedAt.toString()));
+        verify(vehicleService).getStatus(1L);
+    }
+
+    @Test
+    @DisplayName("수집 이력이 없으면 200과 NO_DATA 및 null 수신 시각을 반환한다")
+    void getVehicleStatusWithoutTelemetry() throws Exception {
+        when(vehicleService.getStatus(1L))
+                .thenReturn(new VehicleStatusResponse(1L, VehicleStatus.NO_DATA, null));
+
+        mockMvc.perform(get("/api/v1/vehicles/{id}/status", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.status").value("NO_DATA"))
+                .andExpect(jsonPath("$.lastReceivedAt").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 차량의 상태 조회는 404를 반환한다")
+    void getVehicleStatusReturns404WhenNotFound() throws Exception {
+        when(vehicleService.getStatus(999L))
+                .thenThrow(new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
+
+        mockMvc.perform(get("/api/v1/vehicles/{id}/status", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("VEHICLE_NOT_FOUND"));
     }
 }

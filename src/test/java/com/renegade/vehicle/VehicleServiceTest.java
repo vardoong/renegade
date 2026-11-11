@@ -2,6 +2,14 @@ package com.renegade.vehicle;
 
 import com.renegade.global.exception.BusinessException;
 import com.renegade.global.exception.ErrorCode;
+import com.renegade.telemetry.Telemetry;
+import com.renegade.telemetry.TelemetryRepository;
+import com.renegade.vehicle.dto.VehicleStatusResponse;
+import com.renegade.vehicle.enums.VehicleStatus;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import java.time.Instant;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +37,12 @@ class VehicleServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
+
+    @Mock
+    private TelemetryRepository telemetryRepository;
+
+    @Mock
+    private VehicleStatusResolver vehicleStatusResolver;
 
     @InjectMocks
     private VehicleService vehicleService;
@@ -153,5 +167,54 @@ class VehicleServiceTest {
         assertThat(result.modelName()).isEqualTo("IONIQ 5");
 
         verify(vehicleRepository).findAll(pageable);
+    }
+
+    @Test
+    @DisplayName("차량이 없으면 상태 조회도 실패하고 텔레메트리는 조회하지 않는다")
+    void getStatusFailsWhenVehicleDoesNotExist() {
+        when(vehicleRepository.existsById(999L)).thenReturn(false);
+
+        assertThatThrownBy(() -> vehicleService.getStatus(999L))
+                .isInstanceOfSatisfying(BusinessException.class,
+                        e -> assertThat(e.getErrorCode()).isEqualTo(ErrorCode.VEHICLE_NOT_FOUND));
+        verifyNoInteractions(telemetryRepository, vehicleStatusResolver);
+    }
+
+    @Test
+    @DisplayName("텔레메트리가 없으면 NO_DATA와 null 수신 시각을 반환한다")
+    void getStatusReturnsNoData() {
+        when(vehicleRepository.existsById(1L)).thenReturn(true);
+        when(telemetryRepository.findTopByVehicle_IdOrderByCreatedAtDescIdDesc(1L))
+                .thenReturn(Optional.empty());
+
+        VehicleStatusResponse result = vehicleService.getStatus(1L);
+
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.status()).isEqualTo(VehicleStatus.NO_DATA);
+        assertThat(result.lastReceivedAt()).isNull();
+        verifyNoInteractions(vehicleStatusResolver);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = VehicleStatus.class, names = {"DRIVING", "PARKED", "OFFLINE"})
+    @DisplayName("최신 수신 데이터를 Resolver에 전달하고 판정 결과와 수신 시각을 반환한다")
+    void getStatusReturnsResolvedStatus(VehicleStatus status) {
+        Instant receivedAt = Instant.parse("2026-11-11T00:00:00Z");
+        Telemetry telemetry = Telemetry.builder().vehicle(vehicle).speed(60.0)
+                .timestamp(receivedAt.minusSeconds(60)).build();
+        ReflectionTestUtils.setField(telemetry, "createdAt", receivedAt);
+        when(vehicleRepository.existsById(1L)).thenReturn(true);
+        when(telemetryRepository.findTopByVehicle_IdOrderByCreatedAtDescIdDesc(1L))
+                .thenReturn(Optional.of(telemetry));
+        when(vehicleStatusResolver.resolve(eq(telemetry), any(Instant.class))).thenReturn(status);
+        Instant before = Instant.now();
+
+        VehicleStatusResponse result = vehicleService.getStatus(1L);
+
+        Instant after = Instant.now();
+        assertThat(result).isEqualTo(new VehicleStatusResponse(1L, status, receivedAt));
+        org.mockito.ArgumentCaptor<Instant> now = org.mockito.ArgumentCaptor.forClass(Instant.class);
+        verify(vehicleStatusResolver).resolve(eq(telemetry), now.capture());
+        assertThat(now.getValue()).isBetween(before, after);
     }
 }

@@ -28,6 +28,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class TelemetryRepositoryIntegrationTest {
 
     @Autowired
+    private jakarta.persistence.EntityManager entityManager;
+
+    @Autowired
     private TelemetryRepository telemetryRepository;
 
     @Autowired
@@ -223,5 +226,49 @@ class TelemetryRepositoryIntegrationTest {
         assertThat(result.getNumber()).isEqualTo(1);
         assertThat(result.getContent()).extracting(Telemetry::getId)
                 .containsExactly(second.getId(), first.getId());
+    }
+
+    @Test
+    @DisplayName("최신 수신 조회는 측정 시각이나 다른 차량 대신 서버 수신 시각을 기준으로 한다")
+    void shouldFindLatestByReceivedTime() {
+        Vehicle vehicle = saveVehicle("RECEIVED-001");
+        Vehicle other = saveVehicle("RECEIVED-002");
+        Instant base = Instant.parse("2026-11-11T00:00:00Z");
+        Telemetry expected = saveTelemetry(vehicle, base);
+        Telemetry newerMeasurement = saveTelemetry(vehicle, base.plusSeconds(60));
+        Telemetry otherTelemetry = saveTelemetry(other, base);
+        setReceivedAt(expected, base.plusSeconds(2));
+        setReceivedAt(newerMeasurement, base);
+        setReceivedAt(otherTelemetry, base.plusSeconds(3));
+        Long expectedId = expected.getId();
+        entityManager.clear();
+
+        Telemetry result = telemetryRepository
+                .findTopByVehicle_IdOrderByCreatedAtDescIdDesc(vehicle.getId()).orElseThrow();
+
+        assertThat(result.getId()).isEqualTo(expectedId);
+        assertThat(result.getCreatedAt()).isEqualTo(base.plusSeconds(2));
+    }
+
+    @Test
+    @DisplayName("서버 수신 시각이 같으면 ID가 큰 데이터를 선택한다")
+    void shouldFindHighestIdWhenReceivedTimesMatch() {
+        Vehicle vehicle = saveVehicle("RECEIVED-TIE");
+        Instant base = Instant.parse("2026-11-11T00:00:00Z");
+        Telemetry first = saveTelemetry(vehicle, base);
+        Telemetry second = saveTelemetry(vehicle, base.minusSeconds(1));
+        setReceivedAt(first, base);
+        setReceivedAt(second, base);
+        Long expectedId = second.getId();
+        entityManager.clear();
+
+        assertThat(telemetryRepository.findTopByVehicle_IdOrderByCreatedAtDescIdDesc(vehicle.getId())
+                .orElseThrow().getId()).isEqualTo(expectedId);
+    }
+
+    private void setReceivedAt(Telemetry telemetry, Instant receivedAt) {
+        entityManager.createNativeQuery("UPDATE telemetry SET created_at = :receivedAt WHERE id = :id")
+                .setParameter("receivedAt", receivedAt).setParameter("id", telemetry.getId())
+                .executeUpdate();
     }
 }
