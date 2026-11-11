@@ -2,6 +2,7 @@ package com.renegade.vehicle;
 
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
+import com.renegade.vehicle.dto.VehicleStatusResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -45,5 +46,12 @@ public class VehicleController implements VehicleApi {
             ) Pageable pageable
     ) {
         return ResponseEntity.ok(vehicleService.getList(pageable));
+    }
+
+    @GetMapping("/api/v1/vehicles/{id}/status")
+    public ResponseEntity<VehicleStatusResponse> findStatusById(
+            @PathVariable("id") Long id
+    ) {
+        return ResponseEntity.ok(vehicleService.getStatus(id));
     }
 }

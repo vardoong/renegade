@@ -23,4 +23,6 @@ public interface TelemetryRepository extends JpaRepository<Telemetry, Long> {
             Pageable pageable);
 
     Optional<Telemetry> findTopByVehicle_IdOrderByTimestampDescIdDesc(Long vehicleId);
+
+    Optional<Telemetry> findTopByVehicle_IdOrderByCreatedAtDescIdDesc(Long vehicleId);
 }

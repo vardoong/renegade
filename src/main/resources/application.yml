@@ -41,3 +41,5 @@ renegade:
     telemetry-timing:
       enabled: false
       threshold-ms: 30
+  vehicle:
+    offline-threshold: 3m

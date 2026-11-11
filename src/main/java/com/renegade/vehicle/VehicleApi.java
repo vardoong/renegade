@@ -3,6 +3,7 @@ package com.renegade.vehicle;
 import com.renegade.global.exception.ErrorResponse;
 import com.renegade.vehicle.dto.VehicleCreateRequest;
 import com.renegade.vehicle.dto.VehicleResponse;
+import com.renegade.vehicle.dto.VehicleStatusResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -69,5 +70,20 @@ public interface VehicleApi {
     )
     ResponseEntity<Page<VehicleResponse>> getList(
             @ParameterObject Pageable pageable
+    );
+    @Operation(
+            summary = "차량 상태 조회",
+            description = "차량의 최신 상태를 조회합니다." +
+                    "서버에 저장된 최신의 데이터를 기준으로 합니다."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "차량 상태 조회 성공"
+    )
+    ResponseEntity<VehicleStatusResponse> findStatusById(
+            @Parameter(
+                    description = "조회할 차량 ID",
+                    example = "1"
+            ) Long id
     );
 }
