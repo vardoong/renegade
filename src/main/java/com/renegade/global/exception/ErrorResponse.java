@@ -20,4 +20,12 @@ public record ErrorResponse(
                 errorCode.getMessage()
         );
     }
+
+    public static ErrorResponse from(ErrorCode errorCode, String message) {
+        return new ErrorResponse(
+                errorCode.getStatus().value(),
+                errorCode.name(),
+                message
+        );
+    }
 }

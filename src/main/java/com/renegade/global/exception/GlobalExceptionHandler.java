@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import tools.jackson.core.JacksonException;
 
 import java.util.Objects;
@@ -33,16 +34,16 @@ public class GlobalExceptionHandler {
                 .map(error -> "[" + error.getField() + "] " + error.getDefaultMessage())
                 .orElse("잘못된 요청입니다.");
 
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(
-                        400,
-                        "INVALID_REQUEST",
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.from(
+                        errorCode,
                         message
                 ));
     }
 
-    // 데이터 타입 오류
+    // Request body 데이터 타입 오류
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         String message = "요청 데이터 형식이 올바르지 않습니다.";
@@ -57,23 +58,36 @@ public class GlobalExceptionHandler {
                 message = "[" + field + "] 데이터 형식이 올바르지 않습니다.";
             }
         }
+
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(
-                        400,
-                        "INVALID_REQUEST",
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.from(
+                        errorCode,
                         message
+                ));
+    }
+
+    // Request param 데이터 타입 오류
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException e) {
+
+        ErrorCode errorCode = ErrorCode.INVALID_REQUEST;
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.from(
+                        errorCode,
+                        "[" + e.getName() + "] 데이터 형식이 올바르지 않습니다."
                 ));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {
+
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse(
-                        500,
-                        "INTERNAL_SERVER_ERROR",
-                        "서버 내부 오류가 발생했습니다."
-                ));
+                .status(errorCode.getStatus())
+                .body(ErrorResponse.from(errorCode));
     }
 }
