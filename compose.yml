@@ -1,3 +1,5 @@
+name: renegade
+
 services:
   postgres:
     image: postgres:17
